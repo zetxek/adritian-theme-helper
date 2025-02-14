@@ -41,17 +41,6 @@ jobs:
             echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
           fi
 
-      - name: Update package.json version
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          npm version ${{ env.VERSION }} --no-git-tag-version
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          git add package.json
-          git commit -m "chore: bump version to ${{ env.VERSION }}"
-          git tag ${{ env.TAG_NAME }}
-          git push origin ${{ env.TAG_NAME }}
-
       - name: Verify versions match
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
