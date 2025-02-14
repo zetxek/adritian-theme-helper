@@ -10,7 +10,12 @@ const ALL_DIRS: string[] = [
   'data',
   'content',
   'assets',
-  'static'
+  'static',
+  'config'
+];
+const CONFIG_FILES: string[] = [
+  'hugo.toml',
+  'hugo.disablemenu.toml'
 ];
 const TEMP_DIR: string = 'temp-clone';
 
@@ -23,11 +28,25 @@ function parseArgs(): string[] {
   const invalidDirs = args.filter(dir => !ALL_DIRS.includes(dir));
   if (invalidDirs.length > 0) {
     console.error('Error: Invalid directories specified:', invalidDirs.join(', '));
-    console.error('Available directories:', ALL_DIRS.join(', '));
+    console.error('Available options:', ALL_DIRS.join(', '));
     process.exit(1);
   }
 
   return args;
+}
+
+function copyFiles(files: string[]): void {
+  files.forEach((file: string) => {
+    const sourcePath: string = path.join(TEMP_DIR, file);
+    const targetPath: string = path.join('.', file);
+
+    if (fs.existsSync(sourcePath)) {
+      console.log(`Copying ${file}...`);
+      execSync(`cp ${sourcePath} ${targetPath}`);
+    } else {
+      console.warn(`Warning: File ${file} not found in repository`);
+    }
+  });
 }
 
 function adrianDownloadContent(dirsToDownload: string[] = ALL_DIRS): void {
@@ -41,24 +60,31 @@ function adrianDownloadContent(dirsToDownload: string[] = ALL_DIRS): void {
     console.log('Cloning repository...');
     execSync(`git clone --depth 1 ${REPO_URL} ${TEMP_DIR}`);
 
-    // Copy each directory
-    dirsToDownload.forEach((dir: string) => {
-      const sourcePath: string = path.join(TEMP_DIR, dir);
-      const targetPath: string = path.join('.', dir);
+    // Copy each directory (except config which is handled separately)
+    dirsToDownload
+      .filter(dir => dir !== 'config')
+      .forEach((dir: string) => {
+        const sourcePath: string = path.join(TEMP_DIR, dir);
+        const targetPath: string = path.join('.', dir);
 
-      if (fs.existsSync(sourcePath)) {
-        // Remove existing directory if it exists
-        if (fs.existsSync(targetPath)) {
-          execSync(`rm -rf ${targetPath}`);
+        if (fs.existsSync(sourcePath)) {
+          // Remove existing directory if it exists
+          if (fs.existsSync(targetPath)) {
+            execSync(`rm -rf ${targetPath}`);
+          }
+          
+          // Copy directory
+          console.log(`Copying ${dir}...`);
+          execSync(`cp -r ${sourcePath} ${targetPath}`);
+        } else {
+          console.warn(`Warning: Directory ${dir} not found in repository`);
         }
-        
-        // Copy directory
-        console.log(`Copying ${dir}...`);
-        execSync(`cp -r ${sourcePath} ${targetPath}`);
-      } else {
-        console.warn(`Warning: Directory ${dir} not found in repository`);
-      }
-    });
+      });
+
+    // Copy config files if 'config' is in dirsToDownload or if downloading everything
+    if (dirsToDownload.includes('config') || dirsToDownload === ALL_DIRS) {
+      copyFiles(CONFIG_FILES);
+    }
 
     // Cleanup
     console.log('Cleaning up...');

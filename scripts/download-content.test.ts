@@ -80,4 +80,71 @@ describe('adrianDownloadContent', () => {
     
     consoleSpy.mockRestore();
   });
+
+  it('should download config files along with directories', () => {
+    adrianDownloadContent();
+
+    // Should copy hugo config files
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.toml')
+    );
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    );
+  });
+
+  it('should handle missing config files gracefully', () => {
+    const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
+    mockExistsSync
+      .mockReturnValueOnce(true)  // temp dir exists
+      .mockReturnValue(false);    // config files don't exist
+
+    adrianDownloadContent();
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('File hugo.toml not found')
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('File hugo.disablemenu.toml not found')
+    );
+    
+    consoleSpy.mockRestore();
+  });
+
+  it('should download only config files when specified', () => {
+    adrianDownloadContent(['config']);
+
+    // Should copy hugo config files
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.toml')
+    );
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    );
+
+    // Should not copy any directories
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/content')
+    );
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/i18n')
+    );
+  });
+
+  it('should not download config files when not specified', () => {
+    adrianDownloadContent(['content']);
+
+    // Should not copy hugo config files
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.toml')
+    );
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    );
+
+    // Should copy specified directory
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/content')
+    );
+  });
 }); 
