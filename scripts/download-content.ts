@@ -5,10 +5,32 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const REPO_URL: string = 'https://github.com/zetxek/adritian-demo';
-const DIRS_TO_DOWNLOAD: string[] = ['i18n', 'data', 'content'];
+const ALL_DIRS: string[] = [
+  'i18n',
+  'data',
+  'content',
+  'assets',
+  'static'
+];
 const TEMP_DIR: string = 'temp-clone';
 
-function adrianDownloadContent(): void {
+function parseArgs(): string[] {
+  const args = process.argv.slice(2);
+  if (args.length === 0) {
+    return ALL_DIRS;
+  }
+
+  const invalidDirs = args.filter(dir => !ALL_DIRS.includes(dir));
+  if (invalidDirs.length > 0) {
+    console.error('Error: Invalid directories specified:', invalidDirs.join(', '));
+    console.error('Available directories:', ALL_DIRS.join(', '));
+    process.exit(1);
+  }
+
+  return args;
+}
+
+function adrianDownloadContent(dirsToDownload: string[] = ALL_DIRS): void {
   try {
     // Create temp directory if it doesn't exist
     if (!fs.existsSync(TEMP_DIR)) {
@@ -20,7 +42,7 @@ function adrianDownloadContent(): void {
     execSync(`git clone --depth 1 ${REPO_URL} ${TEMP_DIR}`);
 
     // Copy each directory
-    DIRS_TO_DOWNLOAD.forEach((dir: string) => {
+    dirsToDownload.forEach((dir: string) => {
       const sourcePath: string = path.join(TEMP_DIR, dir);
       const targetPath: string = path.join('.', dir);
 
@@ -55,7 +77,8 @@ function adrianDownloadContent(): void {
 
 // Execute if run directly
 if (require.main === module) {
-  adrianDownloadContent();
+  const dirsToDownload = parseArgs();
+  adrianDownloadContent(dirsToDownload);
 }
 
 export { adrianDownloadContent }; 
