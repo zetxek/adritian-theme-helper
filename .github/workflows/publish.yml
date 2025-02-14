@@ -32,6 +32,24 @@ jobs:
         
       - name: Build
         run: npm run build
+
+      - name: Verify versions match
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          GIT_TAG="${{ github.event_name == 'workflow_dispatch' && inputs.version || github.event.release.tag_name }}"
+          GIT_TAG_CLEAN=${GIT_TAG#v}  # Remove 'v' prefix if present
+          
+          echo "Package version: $PKG_VERSION"
+          echo "Git tag/Release version: $GIT_TAG_CLEAN"
+          
+          if [ "$PKG_VERSION" != "$GIT_TAG_CLEAN" ]; then
+            echo "Error: Version mismatch!"
+            echo "package.json version: $PKG_VERSION"
+            echo "Git tag/Release version: $GIT_TAG_CLEAN"
+            exit 1
+          fi
+          
+          echo "✅ Versions match: $PKG_VERSION"
         
       - name: Publish to NPM
         run: |
