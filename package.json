@@ -1,10 +1,31 @@
 {
+  "name": "adritian-theme-helper",
+  "version": "1.0.0",
+  "description": "Downloads specific content from adritian-demo repository",
+  "main": "dist/scripts/download-content.js",
+  "types": "dist/scripts/download-content.d.ts",
   "scripts": {
-    "download-content": "ts-node scripts/download-content.ts"
+    "download-content": "ts-node scripts/download-content.ts",
+    "build": "tsc",
+    "prepare": "npm run build"
   },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "content",
+    "downloader",
+    "adritian",
+    "hugo"
+  ],
+  "author": "Adrián Moreno Peña",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.17.19",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"
+  },
+  "bin": {
+    "adritian-download-content": "./dist/scripts/download-content.js"
   }
 }
