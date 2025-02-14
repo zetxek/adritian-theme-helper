@@ -1,0 +1,87 @@
+name: Release and Publish
+on:
+  push:
+    tags:
+      - 'v*' # Trigger on version tags
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.4)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org/'
+          scope: '@zetxek'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set version variables
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "VERSION=${{ inputs.version }}" >> $GITHUB_ENV
+            echo "TAG_NAME=v${{ inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+            echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          fi
+
+      - name: Update package.json version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          npm version ${{ env.VERSION }} --no-git-tag-version
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add package.json
+          git commit -m "chore: bump version to ${{ env.VERSION }}"
+          git tag ${{ env.TAG_NAME }}
+          git push origin ${{ env.TAG_NAME }}
+
+      - name: Verify versions match
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          echo "Package version: $PKG_VERSION"
+          echo "Release version: ${{ env.VERSION }}"
+          
+          if [ "$PKG_VERSION" != "${{ env.VERSION }}" ]; then
+            echo "Error: Version mismatch!"
+            echo "package.json version: $PKG_VERSION"
+            echo "Release version: ${{ env.VERSION }}"
+            exit 1
+          fi
+          
+          echo "✅ Versions match: $PKG_VERSION"
+
+      - name: Build
+        run: npm run build
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ env.TAG_NAME }} \
+            --title "Release ${{ env.TAG_NAME }}" \
+            --notes "Changes in this Release:
+            * Release version ${{ env.VERSION }}"
+
+      - name: Publish to NPM
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
