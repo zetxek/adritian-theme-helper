@@ -1,9 +1,9 @@
 # adritian-theme-helper
-NPM package to help automate some tasks
+npm package to help automate some tasks (https://www.npmjs.com/package/@zetxek/adritian-theme-helper).
 
 This script is a helper for the Hugo theme [adritian](https://github.com/zetxek/adritian-free-hugo-theme).
 
-It downloads the content from the [adritian-demo repository](https://github.com/zetxek/adritian-demo) and copy it to the current directory. 
+It downloads the content from the [adritian-demo repository](https://github.com/zetxek/adritian-demo) and copies it to the current directory. 
 
 ## Usage
 
