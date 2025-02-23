@@ -8,7 +8,7 @@ It downloads the content from the [adritian-demo repository](https://github.com/
 ## Usage
 
 ```bash
-npm install adritian-theme-helper
+npm install @zetxek/adritian-theme-helper
 npm run download-content
 ```
 
