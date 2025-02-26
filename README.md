@@ -14,10 +14,20 @@ npm run download-content
 
 ## Options
 
+### Specific Directories
 The script can download specific directories. The default is to download all of them.
 
 ```bash
 npm run download-content -- i18n data content assets static config
+```
+
+### Specific Branch
+You can specify a branch to download from using the `--branch` or `-b` flag:
+
+```bash
+npm run download-content --branch develop
+# Or with specific directories
+npm run download-content --branch develop content i18n
 ```
 
 

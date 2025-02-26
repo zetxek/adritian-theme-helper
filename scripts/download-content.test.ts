@@ -1,14 +1,14 @@
 import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
-import { adrianDownloadContent } from './download-content';
+import { adritianDownloadContent } from './download-content';
 
 // Mock the external dependencies
 jest.mock('child_process');
 jest.mock('fs');
 jest.mock('path');
 
-describe('adrianDownloadContent', () => {
+describe('adritianDownloadContent', () => {
   const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;
   const mockExistsSync = fs.existsSync as jest.MockedFunction<typeof fs.existsSync>;
   const mockMkdirSync = fs.mkdirSync as jest.MockedFunction<typeof fs.mkdirSync>;
@@ -24,7 +24,7 @@ describe('adrianDownloadContent', () => {
   });
 
   it('should download all directories by default', () => {
-    adrianDownloadContent();
+    adritianDownloadContent();
 
     // Should clone the repository
     expect(mockExecSync).toHaveBeenCalledWith(
@@ -43,7 +43,7 @@ describe('adrianDownloadContent', () => {
 
   it('should download only specified directories', () => {
     const dirsToDownload = ['content', 'i18n'];
-    adrianDownloadContent(dirsToDownload);
+    adritianDownloadContent(dirsToDownload);
 
     // Should only copy specified directories
     dirsToDownload.forEach(dir => {
@@ -61,7 +61,7 @@ describe('adrianDownloadContent', () => {
   it('should create temp directory if it does not exist', () => {
     mockExistsSync.mockReturnValueOnce(false);
     
-    adrianDownloadContent();
+    adritianDownloadContent();
 
     expect(mockMkdirSync).toHaveBeenCalledWith('temp-clone');
   });
@@ -72,7 +72,7 @@ describe('adrianDownloadContent', () => {
       .mockReturnValueOnce(true)  // temp dir exists
       .mockReturnValueOnce(false); // content dir doesn't exist
 
-    adrianDownloadContent(['content']);
+    adritianDownloadContent(['content']);
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Directory content not found')
@@ -82,7 +82,7 @@ describe('adrianDownloadContent', () => {
   });
 
   it('should download config files along with directories', () => {
-    adrianDownloadContent();
+    adritianDownloadContent();
 
     // Should copy hugo config files
     expect(mockExecSync).toHaveBeenCalledWith(
@@ -99,7 +99,7 @@ describe('adrianDownloadContent', () => {
       .mockReturnValueOnce(true)  // temp dir exists
       .mockReturnValue(false);    // config files don't exist
 
-    adrianDownloadContent();
+    adritianDownloadContent();
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('File hugo.toml not found')
@@ -112,7 +112,7 @@ describe('adrianDownloadContent', () => {
   });
 
   it('should download only config files when specified', () => {
-    adrianDownloadContent(['config']);
+    adritianDownloadContent(['config']);
 
     // Should copy hugo config files
     expect(mockExecSync).toHaveBeenCalledWith(
@@ -132,7 +132,7 @@ describe('adrianDownloadContent', () => {
   });
 
   it('should not download config files when not specified', () => {
-    adrianDownloadContent(['content']);
+    adritianDownloadContent(['content']);
 
     // Should not copy hugo config files
     expect(mockExecSync).not.toHaveBeenCalledWith(
@@ -147,4 +147,47 @@ describe('adrianDownloadContent', () => {
       expect.stringContaining('cp -r temp-clone/content')
     );
   });
-}); 
+
+  it('should clone from specific branch when branch option is provided', () => {
+    const options = { branch: 'develop' };
+    adritianDownloadContent(undefined, options);
+
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('git clone --depth 1 -b develop')
+    );
+  });
+
+  it('should clone from default branch when no branch option is provided', () => {
+    adritianDownloadContent();
+
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('git clone --depth 1')
+    );
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('-b')
+    );
+  });
+
+  it('should handle branch option with specific directories', () => {
+    const dirsToDownload = ['content', 'i18n'];
+    const options = { branch: 'feature-branch' };
+    adritianDownloadContent(dirsToDownload, options);
+
+    // Verify branch clone
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('git clone --depth 1 -b feature-branch')
+    );
+
+    // Verify only specified directories are copied
+    dirsToDownload.forEach(dir => {
+      expect(mockExecSync).toHaveBeenCalledWith(
+        expect.stringContaining(`cp -r temp-clone/${dir}`)
+      );
+    });
+
+    // Verify other directories are not copied
+    expect(mockExecSync).not.toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/data')
+    );
+  });
+});

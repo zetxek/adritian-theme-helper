@@ -19,20 +19,41 @@ const CONFIG_FILES: string[] = [
 ];
 const TEMP_DIR: string = 'temp-clone';
 
-function parseArgs(): string[] {
+interface DownloadOptions {
+  branch?: string;
+}
+
+function parseArgs(): { dirs: string[], options: DownloadOptions } {
   const args = process.argv.slice(2);
-  if (args.length === 0) {
-    return ALL_DIRS;
+  const options: DownloadOptions = {};
+  const dirs: string[] = [];
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--branch' || args[i] === '-b') {
+      i++;
+      if (i < args.length) {
+        options.branch = args[i];
+      } else {
+        console.error('Error: Branch name is required after --branch/-b flag');
+        process.exit(1);
+      }
+    } else {
+      dirs.push(args[i]);
+    }
   }
 
-  const invalidDirs = args.filter(dir => !ALL_DIRS.includes(dir));
+  if (dirs.length === 0) {
+    return { dirs: ALL_DIRS, options };
+  }
+
+  const invalidDirs = dirs.filter(dir => !ALL_DIRS.includes(dir));
   if (invalidDirs.length > 0) {
     console.error('Error: Invalid directories specified:', invalidDirs.join(', '));
     console.error('Available options:', ALL_DIRS.join(', '));
     process.exit(1);
   }
 
-  return args;
+  return { dirs, options };
 }
 
 function copyFiles(files: string[]): void {
@@ -49,16 +70,17 @@ function copyFiles(files: string[]): void {
   });
 }
 
-function adrianDownloadContent(dirsToDownload: string[] = ALL_DIRS): void {
+function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: DownloadOptions = {}): void {
   try {
     // Create temp directory if it doesn't exist
     if (!fs.existsSync(TEMP_DIR)) {
       fs.mkdirSync(TEMP_DIR);
     }
 
-    // Clone the repository
+    // Clone the repository with specified branch
     console.log('Cloning repository...');
-    execSync(`git clone --depth 1 ${REPO_URL} ${TEMP_DIR}`);
+    const cloneCommand = `git clone --depth 1 ${options.branch ? `-b ${options.branch}` : ''} ${REPO_URL} ${TEMP_DIR}`;
+    execSync(cloneCommand);
 
     // Copy each directory (except config which is handled separately)
     dirsToDownload
@@ -103,8 +125,8 @@ function adrianDownloadContent(dirsToDownload: string[] = ALL_DIRS): void {
 
 // Execute if run directly
 if (require.main === module) {
-  const dirsToDownload = parseArgs();
-  adrianDownloadContent(dirsToDownload);
+  const { dirs, options } = parseArgs();
+  adritianDownloadContent(dirs, options);
 }
 
-export { adrianDownloadContent }; 
+export { adritianDownloadContent };
