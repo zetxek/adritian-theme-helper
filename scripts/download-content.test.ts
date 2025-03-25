@@ -58,24 +58,37 @@ describe('adritianDownloadContent', () => {
     );
   });
 
-  it('should create temp directory if it does not exist', () => {
-    mockExistsSync.mockReturnValueOnce(false);
-    
-    adritianDownloadContent();
+  it('should handle branch names containing forward slashes', () => {
+    const options = { branch: 'feature/new-design' };
+    adritianDownloadContent(undefined, options);
 
-    expect(mockMkdirSync).toHaveBeenCalledWith('temp-clone');
+    // Verify branch clone works with slashes
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('git clone --depth 1 -b feature/new-design')
+    );
+
+    // Verify normal directory copying still works
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/content')
+    );
+    expect(mockExecSync).toHaveBeenCalledWith(
+      expect.stringContaining('cp -r temp-clone/i18n') 
+    );
+
+    // Verify cleanup
+    expect(mockExecSync).toHaveBeenLastCalledWith(
+      expect.stringContaining('rm -rf temp-clone')
+    );
   });
 
   it('should handle missing directories gracefully', () => {
     const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-    mockExistsSync
-      .mockReturnValueOnce(true)  // temp dir exists
-      .mockReturnValueOnce(false); // content dir doesn't exist
+    mockExistsSync.mockReturnValue(false);
 
-    adritianDownloadContent(['content']);
+    adritianDownloadContent(['nonexistent']);
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Directory content not found')
+      expect.stringContaining('Directory nonexistent not found')
     );
     
     consoleSpy.mockRestore();

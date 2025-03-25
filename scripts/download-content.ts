@@ -21,6 +21,7 @@ const TEMP_DIR: string = 'temp-clone';
 
 interface DownloadOptions {
   branch?: string;
+  repo?: string;
 }
 
 function parseArgs(): { dirs: string[], options: DownloadOptions } {
@@ -35,6 +36,14 @@ function parseArgs(): { dirs: string[], options: DownloadOptions } {
         options.branch = args[i];
       } else {
         console.error('Error: Branch name is required after --branch/-b flag');
+        process.exit(1);
+      }
+    } else if (args[i] === '--repo' || args[i] === '-r') {
+      i++;
+      if (i < args.length) {
+        options.repo = args[i];
+      } else {
+        console.error('Error: Repository URL is required after --repo/-r flag');
         process.exit(1);
       }
     } else {
@@ -77,9 +86,12 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
       fs.mkdirSync(TEMP_DIR);
     }
 
+    // Use the provided repo URL or fall back to the default
+    const repoUrl = options.repo || REPO_URL;
+
     // Clone the repository with specified branch
     console.log('Cloning repository...');
-    const cloneCommand = `git clone --depth 1 ${options.branch ? `-b ${options.branch}` : ''} ${REPO_URL} ${TEMP_DIR}`;
+    const cloneCommand = `git clone --depth 1 ${options.branch ? `-b ${options.branch}` : ''} ${repoUrl} ${TEMP_DIR}`;
     execSync(cloneCommand);
 
     // Copy each directory (except config which is handled separately)
