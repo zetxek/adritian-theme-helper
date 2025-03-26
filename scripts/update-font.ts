@@ -42,9 +42,9 @@ function verifyDirectories(options: UpdateFontOptions): void {
     throw new Error(`Source directory '${source}' does not exist`);
   }
 
-  // Check destination directory
+  // Create destination directory if it doesn't exist
   if (!fs.existsSync(destination)) {
-    throw new Error(`Destination directory '${destination}' does not exist`);
+    fs.mkdirSync(destination, { recursive: true });
   }
 
   // Create required directories if they don't exist
