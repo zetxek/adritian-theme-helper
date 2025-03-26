@@ -126,7 +126,7 @@ function adritianDownloadContent(dirsToDownload = ALL_DIRS, options = {}) {
             }
         }
         // Copy config files if 'config' is in dirsToDownload or if downloading everything
-        if (dirsToDownload.includes('config') || dirsToDownload === ALL_DIRS) {
+        if (dirsToDownload.includes('config') || (dirsToDownload.length === ALL_DIRS.length && dirsToDownload.every(dir => ALL_DIRS.includes(dir)))) {
             copyFiles(CONFIG_FILES);
         }
         // Cleanup

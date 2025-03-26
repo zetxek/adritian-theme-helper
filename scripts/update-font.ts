@@ -11,34 +11,43 @@ interface UpdateFontOptions {
 
 function parseArgs(): UpdateFontOptions {
   const args = process.argv.slice(2);
-  
-  if (args.length !== 2) {
-    console.error('Error: Please provide source and destination directories');
-    console.error('Usage: update-font <source> <destination>');
-    process.exit(1);
+  const options: UpdateFontOptions = { source: '', destination: '' };
+
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--source' && i + 1 < args.length) {
+      options.source = args[i + 1];
+      i++;
+    } else if (args[i] === '--destination' && i + 1 < args.length) {
+      options.destination = args[i + 1];
+      i++;
+    }
   }
 
-  return {
-    source: args[0],
-    destination: args[1]
-  };
+  if (!options.source) {
+    throw new Error('Source directory is required');
+  }
+
+  if (!options.destination) {
+    throw new Error('Destination directory is required');
+  }
+
+  return options;
 }
 
 function verifyDirectories(options: UpdateFontOptions): void {
   const { source, destination } = options;
-  
-  // Check if directories exist
+
+  // Check source directory
   if (!fs.existsSync(source)) {
-    console.error(`Error: Source directory '${source}' does not exist`);
-    process.exit(1);
-  }
-  
-  if (!fs.existsSync(destination)) {
-    console.error(`Error: Destination directory '${destination}' does not exist`);
-    process.exit(1);
+    throw new Error(`Source directory '${source}' does not exist`);
   }
 
-  // Check required subdirectories in destination
+  // Check destination directory
+  if (!fs.existsSync(destination)) {
+    throw new Error(`Destination directory '${destination}' does not exist`);
+  }
+
+  // Create required directories if they don't exist
   const requiredDirs = [
     path.join(destination, 'static', 'fonts'),
     path.join(destination, 'assets', 'css')
@@ -46,8 +55,7 @@ function verifyDirectories(options: UpdateFontOptions): void {
 
   for (const dir of requiredDirs) {
     if (!fs.existsSync(dir)) {
-      console.error(`Error: Required directory '${dir}' does not exist in destination`);
-      process.exit(1);
+      fs.mkdirSync(dir, { recursive: true });
     }
   }
 }
@@ -67,24 +75,27 @@ async function askForConfirmation(message: string): Promise<boolean> {
 }
 
 async function copyDirectory(src: string, dest: string, options: UpdateFontOptions): Promise<void> {
-  if (!fs.existsSync(src)) {
-    console.warn(`Warning: Source directory '${src}' does not exist`);
-    return;
+  if (!fs.existsSync(dest)) {
+    fs.mkdirSync(dest, { recursive: true });
   }
 
-  const files = fs.readdirSync(src);
-  
+  const files = fs.readdirSync(src, { withFileTypes: true });
   for (const file of files) {
-    const srcPath = path.join(src, file);
-    const destPath = path.join(dest, file);
+    const srcPath = path.join(src, file.name);
+    const destPath = path.join(dest, file.name);
 
-    // Skip specific files
-    if (file === 'adritian-icons-ie7-codes.css' || file === 'adritian-icons-ie7.css') {
-      console.log(`Skipping ignored file: ${file}`);
+    // Skip ignored files
+    if (file.name.match(/adritian-icons-ie7/)) {
+      console.log(`Skipping ignored file: ${file.name}`);
       continue;
     }
 
-    if (fs.statSync(srcPath).isDirectory()) {
+    if (file.isDirectory()) {
+      // Skip nested font directories by checking if the source path already contains /font/
+      if (file.name === 'font' && src.includes('/font/')) {
+        console.log(`Skipping nested font directory: ${srcPath}`);
+        continue;
+      }
       if (!fs.existsSync(destPath)) {
         fs.mkdirSync(destPath, { recursive: true });
       }
@@ -103,16 +114,11 @@ async function copyDirectory(src: string, dest: string, options: UpdateFontOptio
   }
 }
 
-function replaceInFiles(directory: string, searchStr: string, replaceStr: string): void {
-  const files = fs.readdirSync(directory);
-  
+function replaceInFiles(dir: string, searchStr: string, replaceStr: string): void {
+  const files = fs.readdirSync(dir, { withFileTypes: true });
   for (const file of files) {
-    const filePath = path.join(directory, file);
-    const stat = fs.statSync(filePath);
-    
-    if (stat.isDirectory()) {
-      replaceInFiles(filePath, searchStr, replaceStr);
-    } else if (file.endsWith('.css') || file.endsWith('.json')) {
+    const filePath = path.join(dir, file.name);
+    if (file.isFile() && (file.name.endsWith('.css') || file.name.endsWith('.json'))) {
       console.log(`Replacing in file: ${filePath}`);
       let content = fs.readFileSync(filePath, 'utf8');
       // Escape special regex characters in the search string
@@ -175,14 +181,17 @@ async function updateFont(options: UpdateFontOptions): Promise<void> {
     console.log('\nFont update completed successfully!');
   } catch (error) {
     console.error('Error:', error instanceof Error ? error.message : String(error));
-    process.exit(1);
+    throw error;
   }
 }
 
 // Execute if run directly
 if (require.main === module) {
   const options = parseArgs();
-  updateFont(options);
+  updateFont(options).catch((error) => {
+    console.error('Error:', error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  });
 }
 
-export { updateFont }; 
+export { updateFont, parseArgs }; 
