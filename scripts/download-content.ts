@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
+import { execSync, execFileSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -72,7 +72,7 @@ function copyFiles(files: string[]): void {
 
     if (fs.existsSync(sourcePath)) {
       console.log(`Copying ${file}...`);
-      execSync(`cp ${sourcePath} ${targetPath}`);
+      execFileSync('cp', [sourcePath, targetPath]);
     } else {
       console.warn(`Warning: File ${file} not found in repository`);
     }
@@ -91,8 +91,12 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
 
     // Clone the repository with specified branch
     console.log('Cloning repository...');
-    const cloneCommand = `git clone --depth 1 ${options.branch ? `-b ${options.branch}` : ''} ${repoUrl} ${TEMP_DIR}`;
-    execSync(cloneCommand);
+    const cloneArgs = ['clone', '--depth', '1'];
+    if (options.branch) {
+      cloneArgs.push('-b', options.branch);
+    }
+    cloneArgs.push(repoUrl, TEMP_DIR);
+    execFileSync('git', cloneArgs);
 
     // Copy each directory (except config which is handled separately)
     dirsToDownload
@@ -104,12 +108,12 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
         if (fs.existsSync(sourcePath)) {
           // Remove existing directory if it exists
           if (fs.existsSync(targetPath)) {
-            execSync(`rm -rf ${targetPath}`);
+            execFileSync('rm', ['-rf', targetPath]);
           }
           
           // Copy directory
           console.log(`Copying ${dir}...`);
-          execSync(`cp -r ${sourcePath} ${targetPath}`);
+          execFileSync('cp', ['-r', sourcePath, targetPath]);
         } else {
           console.warn(`Warning: Directory ${dir} not found in repository`);
         }
@@ -122,14 +126,14 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
 
     // Cleanup
     console.log('Cleaning up...');
-    execSync(`rm -rf ${TEMP_DIR}`);
+    execFileSync('rm', ['-rf', TEMP_DIR]);
 
     console.log('Content downloaded successfully!');
   } catch (error) {
     console.error('Error:', error instanceof Error ? error.message : String(error));
     // Cleanup on error
     if (fs.existsSync(TEMP_DIR)) {
-      execSync(`rm -rf ${TEMP_DIR}`);
+      execFileSync('rm', ['-rf', TEMP_DIR]);
     }
     process.exit(1);
   }
