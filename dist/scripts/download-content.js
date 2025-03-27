@@ -105,8 +105,12 @@ function adritianDownloadContent(dirsToDownload = ALL_DIRS, options = {}) {
         console.log(`Cloning repository from ${REPO_URL}...`);
         const branchInfo = options.branch ? `-b ${options.branch}` : 'default branch';
         console.log(`Using ${branchInfo}`);
-        const cloneCommand = `git clone --depth 1 ${options.branch ? `-b ${options.branch}` : ''} ${REPO_URL} ${TEMP_DIR}`;
-        child_process_1.execSync(cloneCommand);
+        const cloneArgs = ['clone', '--depth', '1'];
+        if (options.branch) {
+            cloneArgs.push('-b', options.branch);
+        }
+        cloneArgs.push(REPO_URL, TEMP_DIR);
+        child_process_1.execFileSync('git', cloneArgs);
         // Copy each directory (except config which is handled separately)
         const filteredDirs = dirsToDownload.filter(dir => dir !== 'config');
         for (const dir of filteredDirs) {
