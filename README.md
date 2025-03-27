@@ -47,8 +47,7 @@ The `update-font` script helps you update font files in your theme. It copies fo
 In order to generate the font files, you can check the PR [here](https://github.com/zetxek/adritian-free-hugo-theme/pull/169).
 
 
-Once you have the font files downloaded, you can run the script to update your font files in the them: 
-
+Once you have the font files downloaded, you can run the script to update your font files in the theme:
 ### Usage
 
 ```bash
