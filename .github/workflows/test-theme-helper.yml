@@ -40,12 +40,27 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          const coverage = require('./coverage/coverage-final.json');
+          const fs = require('fs');
+          const path = require('path');
+          
+          const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-final.json');
+          
+          if (!fs.existsSync(coveragePath)) {
+            console.error('Coverage file not found');
+            return;
+          }
+          
+          const coverage = require(coveragePath);
+          if (!coverage || !coverage.total) {
+            console.error('Invalid coverage data');
+            return;
+          }
+          
           const total = coverage.total;
-          const lines = total.lines.pct;
-          const statements = total.statements.pct;
-          const functions = total.functions.pct;
-          const branches = total.branches.pct;
+          const lines = total.lines?.pct || 0;
+          const statements = total.statements?.pct || 0;
+          const functions = total.functions?.pct || 0;
+          const branches = total.branches?.pct || 0;
           
           const comment = `## Test Coverage Report
           
