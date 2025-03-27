@@ -12,7 +12,9 @@ jobs:
     defaults:
       run:
         working-directory: .
-
+    permissions:
+        contents: read
+        pull-requests: write
     steps:
     - uses: actions/checkout@v4
 
