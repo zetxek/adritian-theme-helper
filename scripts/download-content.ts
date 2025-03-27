@@ -141,4 +141,4 @@ if (require.main === module) {
   adritianDownloadContent(dirs, options);
 }
 
-export { adritianDownloadContent };
+export { adritianDownloadContent, parseArgs };
