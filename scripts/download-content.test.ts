@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { adritianDownloadContent, parseArgs } from './download-content';
@@ -9,7 +9,7 @@ jest.mock('fs');
 jest.mock('path');
 
 describe('adritianDownloadContent', () => {
-  const mockExecSync = execSync as jest.MockedFunction<typeof execSync>;
+  const mockExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
   const mockExistsSync = fs.existsSync as jest.MockedFunction<typeof fs.existsSync>;
   const mockMkdirSync = fs.mkdirSync as jest.MockedFunction<typeof fs.mkdirSync>;
   const mockJoin = path.join as jest.MockedFunction<typeof path.join>;
@@ -30,18 +30,25 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent();
 
     // Should clone the repository
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('git clone --depth 1')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1'])
     );
 
     // Should create temp directory if it doesn't exist
     expect(mockMkdirSync).toHaveBeenCalledTimes(0); // Directory exists in this test
 
     // Should copy all directories
-    expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining('cp -r'));
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r'])
+    );
     
     // Should cleanup
-    expect(mockExecSync).toHaveBeenCalledWith(expect.stringContaining('rm -rf'));
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'rm',
+      expect.arrayContaining(['-rf'])
+    );
   });
 
   it('should download only specified directories', () => {
@@ -50,14 +57,16 @@ describe('adritianDownloadContent', () => {
 
     // Should only copy specified directories
     dirsToDownload.forEach(dir => {
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining(`cp -r temp-clone/${dir}`)
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'cp',
+        expect.arrayContaining([`temp-clone/${dir}`])
       );
     });
 
     // Should not copy other directories
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/data')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/data'])
     );
   });
 
@@ -66,21 +75,25 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent(undefined, options);
 
     // Verify branch clone works with slashes
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('git clone --depth 1 -b feature/new-design')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1', '-b', 'feature/new-design'])
     );
 
     // Verify normal directory copying still works
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/content')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/content'])
     );
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/i18n') 
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/i18n'])
     );
 
     // Verify cleanup
-    expect(mockExecSync).toHaveBeenLastCalledWith(
-      expect.stringContaining('rm -rf temp-clone')
+    expect(mockExecFileSync).toHaveBeenLastCalledWith(
+      'rm',
+      expect.arrayContaining(['-rf', 'temp-clone'])
     );
   });
 
@@ -101,11 +114,13 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent();
 
     // Should copy hugo config files
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.toml')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.toml'])
     );
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.disablemenu.toml'])
     );
   });
 
@@ -131,19 +146,23 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent(['config']);
 
     // Should copy hugo config files
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.toml')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.toml'])
     );
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.disablemenu.toml'])
     );
 
     // Should not copy any directories
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/content')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/content'])
     );
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/i18n')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/i18n'])
     );
   });
 
@@ -151,16 +170,19 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent(['content']);
 
     // Should not copy hugo config files
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.toml')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.toml'])
     );
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp temp-clone/hugo.disablemenu.toml')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['temp-clone/hugo.disablemenu.toml'])
     );
 
     // Should copy specified directory
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/content')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/content'])
     );
   });
 
@@ -168,19 +190,22 @@ describe('adritianDownloadContent', () => {
     const options = { branch: 'develop' };
     adritianDownloadContent(undefined, options);
 
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('git clone --depth 1 -b develop')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1', '-b', 'develop'])
     );
   });
 
   it('should clone from default branch when no branch option is provided', () => {
     adritianDownloadContent();
 
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('git clone --depth 1')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1'])
     );
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('-b')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['-b'])
     );
   });
 
@@ -190,20 +215,23 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent(dirsToDownload, options);
 
     // Verify branch clone
-    expect(mockExecSync).toHaveBeenCalledWith(
-      expect.stringContaining('git clone --depth 1 -b feature-branch')
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1', '-b', 'feature-branch'])
     );
 
     // Verify only specified directories are copied
     dirsToDownload.forEach(dir => {
-      expect(mockExecSync).toHaveBeenCalledWith(
-        expect.stringContaining(`cp -r temp-clone/${dir}`)
+      expect(mockExecFileSync).toHaveBeenCalledWith(
+        'cp',
+        expect.arrayContaining(['-r', `temp-clone/${dir}`])
       );
     });
 
     // Verify other directories are not copied
-    expect(mockExecSync).not.toHaveBeenCalledWith(
-      expect.stringContaining('cp -r temp-clone/data')
+    expect(mockExecFileSync).not.toHaveBeenCalledWith(
+      'cp',
+      expect.arrayContaining(['-r', 'temp-clone/data'])
     );
   });
 
@@ -216,132 +244,124 @@ describe('adritianDownloadContent', () => {
         }
         return true;
       });
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
-      .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
       .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['non-existent']);
     expect(mockConsoleWarn).toHaveBeenCalledWith('Warning: Directory non-existent not found in repository');
     mockConsoleWarn.mockRestore();
     mockExistsSync.mockRestore();
-    mockExecSync.mockRestore();
+    mockExecFileSync.mockRestore();
   });
 
   it('should handle git clone errors', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
       .mockImplementationOnce(() => {
         throw new Error('Git clone failed');
-      });
+      })
+      .mockReturnValueOnce(Buffer.from('')); // cleanup
     const mockExistsSync = jest.spyOn(fs, 'existsSync')
       .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['content']);
     expect(mockConsoleError).toHaveBeenCalledWith('Error:', 'Git clone failed');
     mockConsoleError.mockRestore();
-    mockExecSync.mockRestore();
+    mockExecFileSync.mockRestore();
     mockExistsSync.mockRestore();
   });
 
   it('should handle file copy errors', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
-      .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
       .mockImplementationOnce(() => {
         throw new Error('Copy failed');
-      });
-    jest.spyOn({ execSync }, 'execSync')
+      })
       .mockReturnValueOnce(Buffer.from('')); // cleanup
+    const mockExistsSync = jest.spyOn(fs, 'existsSync')
+      .mockReturnValueOnce(true); // existsSync for temp-clone
     adritianDownloadContent(['content']);
     expect(mockConsoleError).toHaveBeenCalledWith('Error:', 'Copy failed');
     mockConsoleError.mockRestore();
-    mockExecSync.mockRestore();
+    mockExecFileSync.mockRestore();
   });
 
   it('should use custom branch when specified', () => {
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
-      .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
+      .mockReturnValueOnce(Buffer.from('')) // copy
       .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['content'], { branch: 'custom-branch' });
-    expect(mockExecSync.mock.calls[0][0]).toContain('git clone --depth 1 -b custom-branch');
-    mockExecSync.mockRestore();
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1', '-b', 'custom-branch'])
+    );
+    mockExecFileSync.mockRestore();
   });
 
   it('should use custom repository when specified', () => {
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
-      .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
+      .mockReturnValueOnce(Buffer.from('')) // copy
       .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['content'], { repo: 'https://custom-repo.git' });
-    expect(mockExecSync.mock.calls[0][0]).toContain('https://custom-repo.git');
-    mockExecSync.mockRestore();
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'git',
+      expect.arrayContaining(['clone', '--depth', '1', 'https://custom-repo.git'])
+    );
+    mockExecFileSync.mockRestore();
   });
 
   it('should handle cleanup on error', () => {
     const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
       .mockImplementationOnce(() => {
         throw new Error('Git clone failed');
-      });
+      })
+      .mockReturnValueOnce(Buffer.from('')); // cleanup
     const mockExistsSync = jest.spyOn(fs, 'existsSync')
       .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['content']);
-    expect(mockExecSync.mock.calls[1][0]).toContain('rm -rf temp-clone');
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'rm',
+      expect.arrayContaining(['-rf', 'temp-clone'])
+    );
     mockConsoleError.mockRestore();
-    mockExecSync.mockRestore();
+    mockExecFileSync.mockRestore();
     mockExistsSync.mockRestore();
   });
 
   it('should handle missing files during copy', () => {
     const mockConsoleWarn = jest.spyOn(console, 'warn').mockImplementation();
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
+      .mockReturnValueOnce(Buffer.from('')); // cleanup
+    const mockExistsSync = jest.spyOn(fs, 'existsSync')
       .mockReturnValueOnce(true) // existsSync for temp-clone
       .mockReturnValueOnce(false); // existsSync for hugo.toml
-    jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // cleanup
     adritianDownloadContent(['config']);
     expect(mockConsoleWarn).toHaveBeenCalledWith('Warning: File hugo.toml not found in repository');
     mockConsoleWarn.mockRestore();
-    mockExecSync.mockRestore();
+    mockExecFileSync.mockRestore();
+    mockExistsSync.mockRestore();
   });
 
   it('should remove existing directories before copying', () => {
-    const mockExecSync = jest.spyOn({ execSync }, 'execSync')
-      .mockReturnValueOnce(Buffer.from('')); // git clone
-    jest.spyOn(fs, 'readdirSync')
-      .mockReturnValueOnce(['content'] as any); // readdirSync for temp-clone
-    jest.spyOn(fs, 'existsSync')
-      .mockReturnValueOnce(true); // existsSync for temp-clone
-    jest.spyOn({ execSync }, 'execSync')
+    const mockExecFileSync = jest.spyOn({ execFileSync }, 'execFileSync')
+      .mockReturnValueOnce(Buffer.from('')) // git clone
+      .mockReturnValueOnce(Buffer.from('')) // rm -rf
+      .mockReturnValueOnce(Buffer.from('')) // cp -r
       .mockReturnValueOnce(Buffer.from('')); // cleanup
+    const mockExistsSync = jest.spyOn(fs, 'existsSync')
+      .mockReturnValueOnce(true)  // temp-clone exists
+      .mockReturnValueOnce(true); // target directory exists
     adritianDownloadContent(['content']);
-    expect(mockExecSync.mock.calls[1][0]).toContain('rm -rf ./content');
-    mockExecSync.mockRestore();
+    expect(mockExecFileSync).toHaveBeenCalledWith(
+      'rm',
+      expect.arrayContaining(['-rf', './content'])
+    );
+    mockExecFileSync.mockRestore();
+    mockExistsSync.mockRestore();
   });
 });
 
