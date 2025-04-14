@@ -51,13 +51,61 @@ Once you have the font files downloaded, you can run the script to update your f
 ### Usage
 
 ```bash
-ts-node scripts/update-font.ts <source> <destination>
+ts-node scripts/update-font.ts --source <source> --destination <destination>
 ```
 
 ### Example
 
 ```bash
-ts-node scripts/update-font.ts ./my-font-source ./my-hugo-site
+ts-node scripts/update-font.ts --source ../Downloads/fontello-1234 ../my-hugo-site
+```
+
+#### Example output
+
+```
+➜  adritian-theme-helper git:(main) ts-node scripts/update-font.ts --source ../../Downloads/fontello-71722736 --destination ../adritian-free-hugo-theme 
+Verifying directories...
+
+Copying CSS files...
+File ../adritian-free-hugo-theme/assets/css/adritian-icons-codes.css already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/css/adritian-icons-codes.css -> ../adritian-free-hugo-theme/assets/css/adritian-icons-codes.css
+File ../adritian-free-hugo-theme/assets/css/adritian-icons-embedded.css already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/css/adritian-icons-embedded.css -> ../adritian-free-hugo-theme/assets/css/adritian-icons-embedded.css
+Skipping ignored file: adritian-icons-ie7-codes.css
+Skipping ignored file: adritian-icons-ie7.css
+File ../adritian-free-hugo-theme/assets/css/adritian-icons.css already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/css/adritian-icons.css -> ../adritian-free-hugo-theme/assets/css/adritian-icons.css
+File ../adritian-free-hugo-theme/assets/css/animation.css already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/css/animation.css -> ../adritian-free-hugo-theme/assets/css/animation.css
+
+Copying config.json...
+File ../adritian-free-hugo-theme/static/fonts/config.json already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/config.json -> ../adritian-free-hugo-theme/static/fonts/config.json
+
+Copying font files...
+File ../adritian-free-hugo-theme/static/fonts/adritian-icons.eot already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/font/adritian-icons.eot -> ../adritian-free-hugo-theme/static/fonts/adritian-icons.eot
+File ../adritian-free-hugo-theme/static/fonts/adritian-icons.svg already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/font/adritian-icons.svg -> ../adritian-free-hugo-theme/static/fonts/adritian-icons.svg
+File ../adritian-free-hugo-theme/static/fonts/adritian-icons.ttf already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/font/adritian-icons.ttf -> ../adritian-free-hugo-theme/static/fonts/adritian-icons.ttf
+File ../adritian-free-hugo-theme/static/fonts/adritian-icons.woff already exists. Overwrite? (y/N): y 
+Copying: ../../Downloads/fontello-71722736/font/adritian-icons.woff -> ../adritian-free-hugo-theme/static/fonts/adritian-icons.woff
+File ../adritian-free-hugo-theme/static/fonts/adritian-icons.woff2 already exists. Overwrite? (y/N): y
+Copying: ../../Downloads/fontello-71722736/font/adritian-icons.woff2 -> ../adritian-free-hugo-theme/static/fonts/adritian-icons.woff2
+
+Replacing strings in CSS files...
+Replacing in file: ../adritian-free-hugo-theme/assets/css/adritian-icons-codes.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/adritian-icons-embedded.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/adritian-icons.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/animation.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/bundle.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/critical.css
+Replacing in file: ../adritian-free-hugo-theme/assets/css/custom.css
+
+Replacing strings in config.json...
+
+Font update completed successfully!
 ```
 
 ### What it does
