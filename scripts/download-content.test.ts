@@ -1,18 +1,18 @@
-import { execFileSync } from 'child_process';
-import fs from 'fs';
-import path from 'path';
+import { execFileSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
 import { adritianDownloadContent, parseArgs } from './download-content';
 
 // Mock the external dependencies
-jest.mock('child_process');
-jest.mock('fs');
-jest.mock('path');
+jest.mock('node:child_process');
+jest.mock('node:fs');
+jest.mock('node:path');
 
 describe('adritianDownloadContent', () => {
-  const mockExecFileSync = execFileSync as jest.MockedFunction<typeof execFileSync>;
-  const mockExistsSync = fs.existsSync as jest.MockedFunction<typeof fs.existsSync>;
-  const mockMkdirSync = fs.mkdirSync as jest.MockedFunction<typeof fs.mkdirSync>;
-  const mockJoin = path.join as jest.MockedFunction<typeof path.join>;
+  const mockExecFileSync = jest.mocked(execFileSync);
+  const mockExistsSync = jest.mocked(fs.existsSync);
+  const mockMkdirSync = jest.mocked(fs.mkdirSync);
+  const mockJoin = jest.mocked(path.join);
   const mockConsoleWarn = jest.spyOn(console, 'warn');
   const mockConsoleError = jest.spyOn(console, 'error');
   const mockExit = jest.spyOn(process, 'exit').mockImplementation(() => undefined as never);
@@ -56,12 +56,12 @@ describe('adritianDownloadContent', () => {
     adritianDownloadContent(dirsToDownload);
 
     // Should only copy specified directories
-    dirsToDownload.forEach(dir => {
+    for (const dir of dirsToDownload) {
       expect(mockExecFileSync).toHaveBeenCalledWith(
         'cp',
         expect.arrayContaining([`temp-clone/${dir}`])
       );
-    });
+    }
 
     // Should not copy other directories
     expect(mockExecFileSync).not.toHaveBeenCalledWith(
@@ -221,12 +221,12 @@ describe('adritianDownloadContent', () => {
     );
 
     // Verify only specified directories are copied
-    dirsToDownload.forEach(dir => {
+    for (const dir of dirsToDownload) {
       expect(mockExecFileSync).toHaveBeenCalledWith(
         'cp',
         expect.arrayContaining(['-r', `temp-clone/${dir}`])
       );
-    });
+    }
 
     // Verify other directories are not copied
     expect(mockExecFileSync).not.toHaveBeenCalledWith(

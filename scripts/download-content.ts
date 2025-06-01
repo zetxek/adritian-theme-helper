@@ -66,7 +66,7 @@ function parseArgs(): { dirs: string[], options: DownloadOptions } {
 }
 
 function copyFiles(files: string[]): void {
-  files.forEach((file: string) => {
+  for (const file of files) {
     const sourcePath: string = path.join(TEMP_DIR, file);
     const targetPath: string = path.join('.', file);
 
@@ -76,7 +76,7 @@ function copyFiles(files: string[]): void {
     } else {
       console.warn(`Warning: File ${file} not found in repository`);
     }
-  });
+  }
 }
 
 function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: DownloadOptions = {}): void {
@@ -99,25 +99,23 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
     execFileSync('git', cloneArgs);
 
     // Copy each directory (except config which is handled separately)
-    dirsToDownload
-      .filter(dir => dir !== 'config')
-      .forEach((dir: string) => {
-        const sourcePath: string = path.join(TEMP_DIR, dir);
-        const targetPath: string = path.join('.', dir);
+    for (const dir of dirsToDownload.filter(dir => dir !== 'config')) {
+      const sourcePath: string = path.join(TEMP_DIR, dir);
+      const targetPath: string = path.join('.', dir);
 
-        if (fs.existsSync(sourcePath)) {
-          // Remove existing directory if it exists
-          if (fs.existsSync(targetPath)) {
-            execFileSync('rm', ['-rf', targetPath]);
-          }
-          
-          // Copy directory
-          console.log(`Copying ${dir}...`);
-          execFileSync('cp', ['-r', sourcePath, targetPath]);
-        } else {
-          console.warn(`Warning: Directory ${dir} not found in repository`);
+      if (fs.existsSync(sourcePath)) {
+        // Remove existing directory if it exists
+        if (fs.existsSync(targetPath)) {
+          execFileSync('rm', ['-rf', targetPath]);
         }
-      });
+        
+        // Copy directory
+        console.log(`Copying ${dir}...`);
+        execFileSync('cp', ['-r', sourcePath, targetPath]);
+      } else {
+        console.warn(`Warning: Directory ${dir} not found in repository`);
+      }
+    }
 
     // Copy config files if 'config' is in dirsToDownload or if downloading everything
     if (dirsToDownload.includes('config') || dirsToDownload === ALL_DIRS) {
