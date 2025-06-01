@@ -1,6 +1,6 @@
 {
   "name": "@zetxek/adritian-theme-helper",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Downloads specific content from adritian-demo repository",
   "main": "dist/scripts/download-content.js",
   "types": "dist/scripts/download-content.d.ts",
