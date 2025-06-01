@@ -21,22 +21,55 @@ npm install @zetxek/adritian-theme-helper
 npm run download-content
 ```
 
-### Options
-
-#### Specific Directories
-The script can download specific directories. The default is to download all of them.
+You can also run the scripts directly with ts-node if you have the repository cloned:
 
 ```bash
-npm run download-content -- i18n data content assets static config
+ts-node scripts/download-content.ts
+ts-node scripts/update-font.ts --source <source> --destination <destination>
 ```
 
-#### Specific Branch
+### Options
+
+#### Download specific content directories
+The script can download specific directories. The default is to download all of them, which is equivalent to the following:
+
+**Using npm:**
+```bash
+npm run download-content i18n data content assets static config
+```
+
+**Using ts-node directly:**
+```bash
+ts-node scripts/download-content.ts i18n data content assets static config
+```
+
+But you can also download only some specific directories, such as:
+
+**Using npm:**
+```bash
+npm run download-content content
+```
+
+**Using ts-node directly:**
+```bash
+ts-node scripts/download-content.ts content
+```
+
+#### Download specific branch
 You can specify a branch to download from using the `--branch` or `-b` flag:
 
+**Using npm:**
 ```bash
-npm run download-content --branch develop
+npm run download-content -- --branch develop
 # Or with specific directories
-npm run download-content --branch develop content i18n
+npm run download-content -- --branch develop content i18n
+```
+
+**Using ts-node directly:**
+```bash
+ts-node scripts/download-content.ts --branch develop
+# Or with specific directories
+ts-node scripts/download-content.ts --branch develop content i18n
 ```
 
 
@@ -48,16 +81,29 @@ In order to generate the font files, you can check the PR [here](https://github.
 
 
 Once you have the font files downloaded, you can run the script to update your font files in the theme:
+
 ### Usage
 
+**Using npm:**
+```bash
+npm run update-font -- --source <source> --destination <destination>
+```
+
+**Using ts-node directly:**
 ```bash
 ts-node scripts/update-font.ts --source <source> --destination <destination>
 ```
 
-### Example
+### Examples
 
+**Using npm:**
 ```bash
-ts-node scripts/update-font.ts --source ../Downloads/fontello-1234 ../my-hugo-site
+npm run update-font -- --source ../Downloads/fontello-1234 --destination ../my-hugo-site
+```
+
+**Using ts-node directly:**
+```bash
+ts-node scripts/update-font.ts --source ../Downloads/fontello-1234 --destination ../my-hugo-site
 ```
 
 #### Example output

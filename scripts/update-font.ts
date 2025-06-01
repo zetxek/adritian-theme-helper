@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as readline from 'readline';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as readline from 'node:readline';
 
 interface UpdateFontOptions {
   source: string;
@@ -12,6 +12,12 @@ interface UpdateFontOptions {
 function parseArgs(): UpdateFontOptions {
   const args = process.argv.slice(2);
   const options: UpdateFontOptions = { source: '', destination: '' };
+
+  // Check if help is requested
+  if (args.includes('--help') || args.includes('-h')) {
+    showHelp();
+    process.exit(0);
+  }
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--source' && i + 1 < args.length) {
@@ -23,15 +29,41 @@ function parseArgs(): UpdateFontOptions {
     }
   }
 
-  if (!options.source) {
-    throw new Error('Source directory is required');
-  }
-
-  if (!options.destination) {
-    throw new Error('Destination directory is required');
+  if (!options.source || !options.destination) {
+    console.error('❌ Error: Both source and destination directories are required.\n');
+    showHelp();
+    process.exit(1);
   }
 
   return options;
+}
+
+function showHelp(): void {
+  console.log(`
+🎨 Adritian Font Updater
+
+Updates font files in your Hugo theme from a fontello download.
+
+Usage:
+  npm run update-font -- --source <source> --destination <destination>
+  ts-node scripts/update-font.ts --source <source> --destination <destination>
+
+Options:
+  --source <path>        Path to the fontello download directory
+  --destination <path>   Path to your Hugo site directory
+  --help, -h            Show this help message
+
+Examples:
+  npm run update-font -- --source ../Downloads/fontello-123456 --destination ../my-hugo-site
+  ts-node scripts/update-font.ts --source ./fontello-download --destination ./my-theme
+
+The source directory should contain:
+  - css/ folder with CSS files
+  - font/ folder with font files  
+  - config.json file
+
+The destination directory should be your Hugo site root.
+`);
 }
 
 function verifyDirectories(options: UpdateFontOptions): void {

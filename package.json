@@ -6,6 +6,7 @@
   "types": "dist/scripts/download-content.d.ts",
   "scripts": {
     "download-content": "ts-node scripts/download-content.ts",
+    "update-font": "ts-node scripts/update-font.ts",
     "build": "tsc",
     "prepare": "npm run build",
     "test": "jest",
