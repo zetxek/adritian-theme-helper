@@ -35,9 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adritianDownloadContent = adritianDownloadContent;
-const child_process_1 = require("child_process");
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
+exports.parseArgs = parseArgs;
+const node_child_process_1 = require("node:child_process");
+const fs = __importStar(require("node:fs"));
+const path = __importStar(require("node:path"));
 const REPO_URL = 'https://github.com/zetxek/adritian-demo';
 const ALL_DIRS = [
     'i18n',
@@ -67,6 +68,16 @@ function parseArgs() {
                 process.exit(1);
             }
         }
+        else if (args[i] === '--repo' || args[i] === '-r') {
+            i++;
+            if (i < args.length) {
+                options.repo = args[i];
+            }
+            else {
+                console.error('Error: Repository URL is required after --repo/-r flag');
+                process.exit(1);
+            }
+        }
         else {
             dirs.push(args[i]);
         }
@@ -83,17 +94,17 @@ function parseArgs() {
     return { dirs, options };
 }
 function copyFiles(files) {
-    for (const file of files) {
+    files.forEach((file) => {
         const sourcePath = path.join(TEMP_DIR, file);
         const targetPath = path.join('.', file);
         if (fs.existsSync(sourcePath)) {
             console.log(`Copying ${file}...`);
-            child_process_1.execSync(`cp ${sourcePath} ${targetPath}`);
+            (0, node_child_process_1.execFileSync)('cp', [sourcePath, targetPath]);
         }
         else {
             console.warn(`Warning: File ${file} not found in repository`);
         }
-    }
+    });
 }
 function adritianDownloadContent(dirsToDownload = ALL_DIRS, options = {}) {
     try {
@@ -101,48 +112,48 @@ function adritianDownloadContent(dirsToDownload = ALL_DIRS, options = {}) {
         if (!fs.existsSync(TEMP_DIR)) {
             fs.mkdirSync(TEMP_DIR);
         }
+        // Use the provided repo URL or fall back to the default
+        const repoUrl = options.repo || REPO_URL;
         // Clone the repository with specified branch
-        console.log(`Cloning repository from ${REPO_URL}...`);
-        const branchInfo = options.branch ? `-b ${options.branch}` : 'default branch';
-        console.log(`Using ${branchInfo}`);
+        console.log('Cloning repository...');
         const cloneArgs = ['clone', '--depth', '1'];
         if (options.branch) {
             cloneArgs.push('-b', options.branch);
         }
-        cloneArgs.push(REPO_URL, TEMP_DIR);
-        child_process_1.execFileSync('git', cloneArgs);
+        (0, node_child_process_1.execFileSync)('git', cloneArgs);
         // Copy each directory (except config which is handled separately)
-        const filteredDirs = dirsToDownload.filter(dir => dir !== 'config');
-        for (const dir of filteredDirs) {
+        dirsToDownload
+            .filter(dir => dir !== 'config')
+            .forEach((dir) => {
             const sourcePath = path.join(TEMP_DIR, dir);
             const targetPath = path.join('.', dir);
             if (fs.existsSync(sourcePath)) {
                 // Remove existing directory if it exists
                 if (fs.existsSync(targetPath)) {
-                    child_process_1.execSync(`rm -rf ${targetPath}`);
+                    (0, node_child_process_1.execFileSync)('rm', ['-rf', targetPath]);
                 }
                 // Copy directory
                 console.log(`Copying ${dir}...`);
-                child_process_1.execSync(`cp -r ${sourcePath} ${targetPath}`);
+                (0, node_child_process_1.execFileSync)('cp', ['-r', sourcePath, targetPath]);
             }
             else {
                 console.warn(`Warning: Directory ${dir} not found in repository`);
             }
-        }
+        });
         // Copy config files if 'config' is in dirsToDownload or if downloading everything
-        if (dirsToDownload.includes('config') || (dirsToDownload.length === ALL_DIRS.length && dirsToDownload.every(dir => ALL_DIRS.includes(dir)))) {
+        if (dirsToDownload.includes('config') || dirsToDownload === ALL_DIRS) {
             copyFiles(CONFIG_FILES);
         }
         // Cleanup
         console.log('Cleaning up...');
-        child_process_1.execSync(`rm -rf ${TEMP_DIR}`);
+        (0, node_child_process_1.execFileSync)('rm', ['-rf', TEMP_DIR]);
         console.log('Content downloaded successfully!');
     }
     catch (error) {
         console.error('Error:', error instanceof Error ? error.message : String(error));
         // Cleanup on error
         if (fs.existsSync(TEMP_DIR)) {
-            child_process_1.execSync(`rm -rf ${TEMP_DIR}`);
+            (0, node_child_process_1.execFileSync)('rm', ['-rf', TEMP_DIR]);
         }
         process.exit(1);
     }

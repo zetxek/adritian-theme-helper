@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { execSync } from 'child_process';
-import * as fs from 'fs';
-import * as path from 'path';
+import { execFileSync } from 'node:child_process';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 
 const REPO_URL: string = 'https://github.com/zetxek/adritian-demo';
 const ALL_DIRS: string[] = [
@@ -95,6 +95,7 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
     if (options.branch) {
       cloneArgs.push('-b', options.branch);
     }
+    cloneArgs.push(repoUrl, TEMP_DIR);
     execFileSync('git', cloneArgs);
 
     // Copy each directory (except config which is handled separately)
