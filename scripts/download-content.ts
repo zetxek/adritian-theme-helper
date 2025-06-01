@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { execSync, execFileSync } from 'child_process';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -95,7 +95,6 @@ function adritianDownloadContent(dirsToDownload: string[] = ALL_DIRS, options: D
     if (options.branch) {
       cloneArgs.push('-b', options.branch);
     }
-    cloneArgs.push(repoUrl, TEMP_DIR);
     execFileSync('git', cloneArgs);
 
     // Copy each directory (except config which is handled separately)

@@ -23,7 +23,7 @@ npm run download-content
 
 ### Options
 
-### Specific Directories
+#### Specific Directories
 The script can download specific directories. The default is to download all of them.
 
 ```bash
@@ -146,3 +146,11 @@ source/
 ```bash
 npm run download-content
 ```
+
+
+## Getting help
+
+The project is offered "as is", and it's a side project that powers my personal website. Support is given whenever life allows, and it's not offered in private e-mails: please use the public issue trackers in GitHub so others benefit from the conversation.
+
+- 🐛 For bugs or errors (either in the code or documentation): create an issue [create an issue](https://github.com/zetxek/adritian-free-hugo-theme/issues).
+- 💡 For ideas, discussion or open conversations: create a topic in the [discussion board for the theme](https://github.com/zetxek/adritian-free-hugo-theme/discussions).
