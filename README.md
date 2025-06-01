@@ -3,7 +3,7 @@ npm package to help automate some tasks (https://www.npmjs.com/package/@zetxek/a
 
 It downloads the content from the [adritian-demo repository](https://github.com/zetxek/adritian-demo) and copies it to the current directory. 
 
-✨ Theme theme is entirely free and open source. We welcome your ideas, feedback, and contributions! If you find it useful, please [give it a GitHub star](https://github.com/zetxek/adritian-free-hugo-theme) to show your support.
+✨ The theme and this helper are entirely free and open source. We welcome your ideas, feedback, and contributions! If you find it useful, please [give it a GitHub star](https://github.com/zetxek/adritian-free-hugo-theme) to show your support.
 
 ## Content downloaded usage
 
