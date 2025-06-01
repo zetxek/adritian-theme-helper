@@ -11,7 +11,7 @@ Most likely you will want to follow the theme installation instructions (https:/
 
 ```
 hugo mod npm pack
-npm I
+npm i
 ```
 
 If for some reason (such as using the theme not as a hugo module), you can still install and run the script, by running:
